@@ -204,11 +204,10 @@ void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
 
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints + %u, totalWinPoints = totalWinPoints + %u  WHERE guid = %u", amount, player->GetGUID());
+    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints + %u WHERE guid = %u", amount, player->GetGUID());
     std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " stats points. You can use your grimoire in your inventory to spend it.";
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
-    player->GetSession()->SendAreaTriggerMessage(pchar);
 }
 
 void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
