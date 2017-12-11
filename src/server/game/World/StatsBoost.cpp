@@ -199,7 +199,7 @@ void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
     if (it != StatsBoost::MapTotalUpgradePlayers.end())
         StatsBoost::MapTotalUpgradePlayers[player->GetGUID()] = (*it).second + 1;
 
-    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints - %u WHERE guid = %u", amount, amount, player->GetGUID());
+    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints - %u WHERE guid = %u", amount, player->GetGUID());
 }
 
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
