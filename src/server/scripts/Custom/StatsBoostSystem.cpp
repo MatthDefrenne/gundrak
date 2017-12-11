@@ -37,6 +37,53 @@ class StatsBoostSystem : PlayerScript {
         void OnLevelChanged(Player* player, uint8 oldlevel) override {           // We notice the player he as a new points
             int mupltiplicator = player->getLevel() - oldlevel;
             StatsBoost::GiveStatsPointsToPlayer(player, (StatsBoost::REWARD_ON_LEVELUP * mupltiplicator));
+            if (player->getLevel() > 2) {
+                switch (player->getRace())
+                {
+                case RACE_HUMAN:
+                    player->LearnSpell(458, true);
+
+                    break;
+                case RACE_BLOODELF:
+                    player->LearnSpell(34795, true);
+
+                    break;
+                case RACE_DRAENEI:
+                    player->LearnSpell(35710, true);
+
+                    break;
+                case RACE_GNOME:
+                    player->LearnSpell(10873, true);
+
+                    break;
+                case RACE_NIGHTELF:
+                    player->LearnSpell(10789, true);
+
+                    break;
+                case RACE_ORC:
+                    player->LearnSpell(6653, true);
+
+                    break;
+                case RACE_TAUREN:
+                    player->LearnSpell(15277, true);
+
+                    break;
+                case RACE_TROLL:
+                    player->LearnSpell(10796, true);
+
+                    break;
+                case RACE_DWARF:
+                    player->LearnSpell(6777, true);
+
+                    break;
+                case RACE_UNDEAD_PLAYER:
+                    player->LearnSpell(17464, true);
+
+                    break;
+                default:
+                    break;
+                }
+            }
         }
 
         void OnCreatureKill(Player* killer, Creature* killed) {
@@ -104,7 +151,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Spells critical hit", GOSSIP_SENDER_MAIN, 17);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Spells hit rating", GOSSIP_SENDER_MAIN, 18);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_slowingtotem:30:30:-20:0|tUpgrade Haste spell", GOSSIP_SENDER_MAIN, 19);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|ttUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|tUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 
@@ -143,8 +190,10 @@ public:
         if (action <= 20) {
             StatsBoost::AddStatToPlayer(player, 1.f, action);
         }
-        else
+        else if (action != 1000)
             lastSavedAction = action;
+        else
+            sendMenuGossip(player, item, GOSSIP_ACTION_INFO_DEF);
 
         sendMenuGossip(player, item, lastSavedAction);
 
