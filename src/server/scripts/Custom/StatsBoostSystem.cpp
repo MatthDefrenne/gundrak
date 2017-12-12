@@ -12,19 +12,15 @@
 
 void sendGossipMenuStats(Player* player, Item* item) {
 
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_misc_book_11:30:30:-20:0|tI want to increase my bases stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_misc_book_11:30:30:-20:0|tIncrease bases stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
-    if (player->getClass() == CLASS_WARRIOR || player->getClass() == CLASS_PALADIN || player->getClass() == CLASS_SHAMAN || player->getClass() == CLASS_DRUID || player->getClass() == CLASS_ROGUE || player->getClass() == CLASS_HUNTER)
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_sword_27:30:30:-20:0|tI want to increase my melee stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_sword_27:30:30:-20:0|tIncrease my melee stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-    if (player->getClass() == CLASS_HUNTER)
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tI want to increase my ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tIncrease my ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
 
-    if (player->getClass() == CLASS_MAGE || player->getClass() == CLASS_WARLOCK || player->getClass() == CLASS_PALADIN || player->getClass() == CLASS_SHAMAN || player->getClass() == CLASS_PRIEST || player->getClass() == CLASS_DRUID)
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tI want to increase my spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tIncrease my spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
 
-    if (player->getClass() == CLASS_DRUID || player->getClass() == CLASS_WARRIOR || player->getClass() == CLASS_PALADIN)
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tI want to increase my defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tIncrease my defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
 
     SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
 }
@@ -37,7 +33,22 @@ class StatsBoostSystem : PlayerScript {
         void OnLevelChanged(Player* player, uint8 oldlevel) override {           // We notice the player he as a new points
             int mupltiplicator = player->getLevel() - oldlevel;
             StatsBoost::GiveStatsPointsToPlayer(player, (StatsBoost::REWARD_ON_LEVELUP * mupltiplicator));
-            if (player->getLevel() > 2) {
+        }
+
+        void OnCreatureKill(Player* killer, Creature* killed) {
+            StatsBoost::RewardStatsPointsOnKillBoss(killer, killed);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* channel) override {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnLogin(Player* player, bool firstLogin) {
+            if (firstLogin) {
                 switch (player->getRace())
                 {
                 case RACE_HUMAN:
@@ -78,24 +89,11 @@ class StatsBoostSystem : PlayerScript {
                     break;
                 case RACE_UNDEAD_PLAYER:
                     player->LearnSpell(17464, true);
-
                     break;
                 default:
                     break;
                 }
             }
-        }
-
-        void OnCreatureKill(Player* killer, Creature* killed) {
-            StatsBoost::RewardStatsPointsOnKillBoss(killer, killed);
-        }
-
-        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg) {
-            StatsBoost::ShowRankByTotalUpgrade(player, msg);
-        }
-
-        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* channel) override {
-            StatsBoost::ShowRankByTotalUpgrade(player, msg);
         }
 
         void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild) override {
@@ -193,7 +191,8 @@ public:
         else if (action != 1000)
             lastSavedAction = action;
         else
-            sendMenuGossip(player, item, GOSSIP_ACTION_INFO_DEF);
+            lastSavedAction = 1000;
+
 
         sendMenuGossip(player, item, lastSavedAction);
 

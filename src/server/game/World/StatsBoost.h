@@ -24,7 +24,7 @@ public:
     static std::map<ObjectGuid, uint64> MapTotalUpgradePlayers;
 
     static const int REWARD_ON_KILL_BOSS = 20;
-    static const int REWARD_ON_LEVELUP = 7;
+    static const int REWARD_ON_LEVELUP = 5;
 
 private:
     static const int TOTAL_UPGRADABLE_STAT = 20;
