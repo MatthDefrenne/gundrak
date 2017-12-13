@@ -39,6 +39,7 @@
 #include "Util.h"
 #include "WorldPacket.h"
 #include <cstdarg>
+#include "StatsBoost.h"
 
 void BattlegroundScore::AppendToPacket(WorldPacket& data)
 {
@@ -833,6 +834,7 @@ void Battleground::EndBattleground(uint32 winner)
         // Reward winner team
         if (team == winner)
         {
+            StatsBoost::GiveStatsPointsToPlayer(player, 20);
             if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
             {
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(winner_kills));

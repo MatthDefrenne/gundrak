@@ -13,13 +13,9 @@
 void sendGossipMenuStats(Player* player, Item* item) {
 
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_misc_book_11:30:30:-20:0|tIncrease bases stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_sword_27:30:30:-20:0|tIncrease my melee stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tIncrease my ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tIncrease my spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tIncrease my defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
 
     SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
@@ -39,6 +35,12 @@ class StatsBoostSystem : PlayerScript {
             StatsBoost::RewardStatsPointsOnKillBoss(killer, killed);
         }
 
+        void OnPVPKill(Player* killer, Player* killed) {
+            if (killer->GetGUID() == killed->GetGUID())
+                return;
+        }
+
+
         void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg) {
             StatsBoost::ShowRankByTotalUpgrade(player, msg);
         }
@@ -46,6 +48,8 @@ class StatsBoostSystem : PlayerScript {
         void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* channel) override {
             StatsBoost::ShowRankByTotalUpgrade(player, msg);
         }
+
+
 
         void OnLogin(Player* player, bool firstLogin) {
             if (firstLogin) {
@@ -155,6 +159,9 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
 
         break;
     case GOSSIP_ACTION_INFO_DEF + 5:
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Dodge rating", GOSSIP_SENDER_MAIN, 21);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Parry rating", GOSSIP_SENDER_MAIN, 22);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Block", GOSSIP_SENDER_MAIN, 23);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
         break;
@@ -185,7 +192,7 @@ public:
     {
         ClearGossipMenuFor(player); // Clears old options
 
-        if (action <= 20) {
+        if (action <= 23) {
             StatsBoost::AddStatToPlayer(player, 1.f, action);
         }
         else if (action != 1000)

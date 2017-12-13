@@ -22,6 +22,9 @@ std::map<const int, const uint64> StatsBoost::MAX_UPDATE_STAT = {
     { 11 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
     { 15 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
     { 20 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
+    { 21 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
+    { 22 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
+    { 23 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
 };
 
 std::map<const int /*rank*/, std::pair<uint32 /*min*/, uint32 /*max*/>> StatsBoost::RanksRequiredUpgrade = {
@@ -124,6 +127,15 @@ void StatsBoost::UpdateStatsPlayer(Player * player, uint32 stat, float amount)
 	case 20:
 		player->ApplySpellPenetrationBonus(amount, true);
 		break;
+    case 21:
+        player->ApplyRatingMod(CR_DODGE, amount, true);
+        break;
+    case 22:
+        player->ApplyRatingMod(CR_PARRY, amount, true);
+        break;
+    case 23:
+        player->ApplyRatingMod(CR_BLOCK, amount, true);
+        break;
 	}
 }
 
@@ -205,7 +217,7 @@ void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
 {
     CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints + %u WHERE guid = %u", amount, player->GetGUID());
-    std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " stats points. You can use your grimoire in your inventory to spend it.";
+    std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " stats points. You can use your Grimoire of Stats allocation in your inventory to spend it.";
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
 }
