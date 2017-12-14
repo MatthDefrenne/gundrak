@@ -45,6 +45,7 @@ std::map<const int /*rank*/, std::pair<uint32 /*min*/, uint32 /*max*/>> StatsBoo
 };
 
 std::map<ObjectGuid, uint64> StatsBoost::MapTotalUpgradePlayers = {};
+std::map<ObjectGuid, uint64> StatsBoost::MapTotalStatsPointsPlayer = {};
 
 StatsBoost::StatsBoost() {}
 
@@ -54,87 +55,174 @@ StatsBoost::~StatsBoost()
 }
 
 
-std::string StatsBoost::GetStatsPoints(Player * player)
+uint64 StatsBoost::GetStatsPoints(Player * player)
 {
-	QueryResult result = CharacterDatabase.PQuery("SELECT statsPoints FROM characters WHERE guid = %u", player->GetGUID());
-	Field* fields = result->Fetch();
-	std::stringstream sp;
-	sp << fields[0].GetUInt64();
-	return sp.str();
+    uint64 totalStatsPoints = 0;
+    auto it = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
+
+    if (it != StatsBoost::MapTotalStatsPointsPlayer.end()) {
+        totalStatsPoints = (*it).second;
+    }
+
+    return totalStatsPoints;
 }
 
-void StatsBoost::UpdateStatsPlayer(Player * player, uint32 stat, float amount)
+void StatsBoost::UpdateStatsPlayer(Player * player, uint32 stat, float amount, bool increase)
 {
+    uint32 stats = 0;
+
 	switch (stat)
 	{
 	case 1: // Spirit
-		player->SetStatFlatModifier(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE) - amount;
+
+        player->SetStatFlatModifier(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE, stats);
 		break;
 	case 2: // Strength
-		player->SetStatFlatModifier(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE) - amount;
+
+		player->SetStatFlatModifier(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE, stats);
 		break;
 	case 3: // Stamina
-		player->SetStatFlatModifier(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE) - amount;
+
+		player->SetStatFlatModifier(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE, stats);
 		break;
-	case 4: // Agility 
-		player->SetStatFlatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE) + amount);
+	case 4: // Agility
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE) - amount;
+
+		player->SetStatFlatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, stats);
 		break;
 	case 5: // Intellect
-		player->SetStatFlatModifier(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE) - amount;
+
+		player->SetStatFlatModifier(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE, stats);
 		break;
 	case 6: // melee attack power
-		player->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE) - amount;
+
+		player->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, stats);
 		break;
 	case 7:
-		player->ApplyRatingMod(CR_CRIT_MELEE, amount, true);
+        if (increase)
+		    player->ApplyRatingMod(CR_CRIT_MELEE, amount, true);
+        else
+            player->ApplyRatingMod(CR_CRIT_MELEE, -amount, true);
 		break;
 	case 8:
-		player->ApplyRatingMod(CR_HIT_MELEE, amount, true);
+        if(increase)
+		    player->ApplyRatingMod(CR_HIT_MELEE, amount, true);
+        else
+            player->ApplyRatingMod(CR_HIT_MELEE, -amount, true);
 		break;
 	case 9:
+        if(increase)
 		player->ApplyRatingMod(CR_EXPERTISE, amount, true);
+        else
+        player->ApplyRatingMod(CR_EXPERTISE, -amount, true);
 		break;
 	case 10:
+        if (increase)
 		player->ApplyRatingMod(CR_ARMOR_PENETRATION, amount, true);
+        else
+            player->ApplyRatingMod(CR_ARMOR_PENETRATION, -amount, true);
 		break;
 	case 11:
+        if (increase)
 		player->ApplyRatingMod(CR_HASTE_MELEE, amount, true);
+        else
+            player->ApplyRatingMod(CR_HASTE_MELEE, -amount, true);
 		break;
 	case 12:
-		player->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE) + amount);
+        if (increase)
+            stats = player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE) + amount;
+        else
+            stats = player->GetFlatModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE) - amount;
+        player->SetStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, stats);
 		break;
 	case 13:
+        if (increase)
 		player->ApplyRatingMod(CR_CRIT_RANGED, amount, true);
+        else
+            player->ApplyRatingMod(CR_CRIT_RANGED, -amount, true);
 		break;
 	case 14:
+        if (increase)
 		player->ApplyRatingMod(CR_HIT_RANGED, amount, true);
+        else
+            player->ApplyRatingMod(CR_HIT_RANGED, -amount, true);
 		break;
 	case 15:
+        if (increase)
 		player->ApplyRatingMod(CR_HASTE_RANGED, amount, true);
+        else
+            player->ApplyRatingMod(CR_HASTE_RANGED, -amount, true);
 		break;
 	case 16:
-		player->ApplySpellPowerBonus(amount, true);
+        if (increase)
+            player->ApplySpellPowerBonus(amount, true);
+        else
+            player->ApplySpellPowerBonus(-amount, true);
 		break;
 	case 17:
-		player->ApplyRatingMod(CR_CRIT_SPELL, amount, true);
+        if (increase)
+        player->ApplyRatingMod(CR_CRIT_SPELL, amount, true);
+        else
+            player->ApplyRatingMod(CR_CRIT_SPELL, -amount, true);
 		break;
 	case 18:
+        if (increase)
 		player->ApplyRatingMod(CR_HIT_SPELL, amount, true);
+        else
+            player->ApplyRatingMod(CR_HIT_SPELL, -amount, true);
 		break;
 	case 19:
+        if (increase)
 		player->ApplyRatingMod(CR_HASTE_SPELL, amount, true);
+        else
+            player->ApplyRatingMod(CR_HASTE_SPELL, -amount, true);
         break;
 	case 20:
+        if (increase)
 		player->ApplySpellPenetrationBonus(amount, true);
+        else
+            player->ApplySpellPenetrationBonus(-amount, true);
 		break;
     case 21:
+        if (increase)
         player->ApplyRatingMod(CR_DODGE, amount, true);
+        else
+            player->ApplyRatingMod(CR_DODGE, -amount, true);
         break;
     case 22:
+        if (increase)
         player->ApplyRatingMod(CR_PARRY, amount, true);
+        else
+            player->ApplyRatingMod(CR_PARRY, -amount, true);
         break;
     case 23:
+        if (increase)
         player->ApplyRatingMod(CR_BLOCK, amount, true);
+        else
+            player->ApplyRatingMod(CR_BLOCK, -amount, true);
         break;
 	}
 }
@@ -143,6 +231,7 @@ void StatsBoost::UpdateStatsPlayerOnLogin(Player * player)
 {
 
     StatsBoost::insertTotalUpgradePlayer(player);
+    StatsBoost::insertTotalStatsPointsPlayer(player);
 
     QueryResult result = CharacterDatabase.PQuery("SELECT * FROM characters_stats_boost WHERE guid = %u", player->GetGUID());
     if (!result)
@@ -150,7 +239,7 @@ void StatsBoost::UpdateStatsPlayerOnLogin(Player * player)
     do
     {
       Field* fields = result->Fetch();
-      StatsBoost::UpdateStatsPlayer(player, fields[1].GetUInt64(), fields[2].GetFloat());
+      StatsBoost::UpdateStatsPlayer(player, fields[1].GetUInt64(), fields[2].GetFloat(), true);
     } while (result->NextRow());
 }
 
@@ -181,14 +270,14 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
         return;
     }
 
-    QueryResult result2 = CharacterDatabase.PQuery("SELECT statsPoints, totalUpgrade FROM characters WHERE guid = %u", player->GetGUID());
+    QueryResult result2 = CharacterDatabase.PQuery("SELECT totalUpgrade FROM characters WHERE guid = %u", player->GetGUID());
 
     if (!result2)
         return;
 
     Field* fields2 = result2->Fetch();
-    uint64 statsPoints = fields2[0].GetUInt64();
-    uint64 totalUpgrade = fields2[1].GetUInt64();
+    uint64 statsPoints = StatsBoost::GetStatsPoints(player);
+    uint64 totalUpgrade = fields2[0].GetUInt64();
 
     std::vector<int> required = StatsBoost::CalculateUpgrade(player, totalUpgrade);
     costToUpgradeStat = required[0 /*RANK*/];
@@ -201,25 +290,38 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
     CharacterDatabase.PQuery("INSERT INTO characters_stats_boost VALUES (%u, %u, %f) ON DUPLICATE KEY UPDATE amount = amount + %f", player->GetGUID(), stat, 1.0f, 1.0f);
 
     StatsBoost::RemoveStatsPointsToPlayer(player, costToUpgradeStat);
-    StatsBoost::UpdateStatsPlayer(player, stat, 1.f);
+    StatsBoost::UpdateStatsPlayer(player, stat, 1.f, true);
 }
 
 void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
 {
+    // Upgrade total upgrade -----------------------------------------------
     auto it = StatsBoost::MapTotalUpgradePlayers.find(player->GetGUID());
 
     if (it != StatsBoost::MapTotalUpgradePlayers.end())
-        StatsBoost::MapTotalUpgradePlayers[player->GetGUID()] = (*it).second + 1;
+        StatsBoost::MapTotalUpgradePlayers[player->GetGUID()] = (*it).second + amount;
 
-    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints - %u, totalUpgrade = totalUpgrade + %u WHERE guid = %u", amount,amount, player->GetGUID());
+    // Upgrade total Stats points ------------------------------------------
+    auto itJ = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
+
+    if (itJ != StatsBoost::MapTotalStatsPointsPlayer.end())
+        StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()] = (*itJ).second - amount;
 }
 
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
 {
-    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = statsPoints + %u WHERE guid = %u", amount, player->GetGUID());
+
+    // Upgrade total Stats points -------------------------------------------------------
+    auto it = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
+
+    if (it != StatsBoost::MapTotalStatsPointsPlayer.end())
+        StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()] = (*it).second + amount;
+    // ----------------------------------------------------------------------------------
+
     std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " stats points. You can use your Grimoire of Stats allocation in your inventory to spend it.";
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
+    player->GetSession()->SendAreaTriggerMessage(pchar);
 }
 
 void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
@@ -284,6 +386,28 @@ std::string StatsBoost::GetRankImage(Player* player, std::string size, std::stri
     return rankImage;
 }
 
+void StatsBoost::onLogoutSaveStats(Player * player)
+{
+    uint64 totalUpgrade = 0;
+    uint64 totalStatsPoints = 0;
+
+    auto it = StatsBoost::MapTotalUpgradePlayers.find(player->GetGUID());
+
+    if (it != StatsBoost::MapTotalUpgradePlayers.end())
+        totalUpgrade = StatsBoost::MapTotalUpgradePlayers[player->GetGUID()];
+
+    // Upgrade total Stats points ------------------------------------------
+    auto itJ = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
+
+    if (itJ != StatsBoost::MapTotalStatsPointsPlayer.end())
+        totalStatsPoints = StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()];
+
+
+    CharacterDatabase.PExecute("UPDATE characters SET statsPoints = %u WHERE guid = %u", totalStatsPoints, player->GetGUID());
+    CharacterDatabase.PExecute("UPDATE characters SET totalUpgrade = %u WHERE guid = %u", totalUpgrade, player->GetGUID());
+
+}
+
 uint32 StatsBoost::GetRequiredUpgradeToReachNextRank(Player* player) {
 
 
@@ -335,5 +459,45 @@ void StatsBoost::insertTotalUpgradePlayer(Player * player)
     totalUpgrade = fields2[0].GetUInt64();
 
     StatsBoost::MapTotalUpgradePlayers[player->GetGUID()] = totalUpgrade;
+
+}
+void StatsBoost::insertTotalStatsPointsPlayer(Player * player)
+{
+    uint64 totalStatsPoints;
+    QueryResult result = CharacterDatabase.PQuery("SELECT statsPoints FROM characters WHERE guid = %u", player->GetGUID());
+
+    if (!result)
+        totalStatsPoints = 0;
+
+    Field* fields = result->Fetch();
+    totalStatsPoints = fields[0].GetUInt64();
+
+    StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()] = totalStatsPoints;
+}
+
+void StatsBoost::ResetStatsAllocation(Player* player) {
+
+    auto it = StatsBoost::MapTotalUpgradePlayers.find(player->GetGUID());
+
+    if (it != StatsBoost::MapTotalUpgradePlayers.end()) {
+        auto itJ = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
+
+        if (itJ != StatsBoost::MapTotalStatsPointsPlayer.end())
+            StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()] = ((*itJ).second += StatsBoost::MapTotalUpgradePlayers[player->GetGUID()]) - 1;
+
+        StatsBoost::MapTotalUpgradePlayers[player->GetGUID()] = 1;
+    }
+
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM characters_stats_boost WHERE guid = %u", player->GetGUID());
+
+    if (!result)
+        return;
+    do
+    {
+        Field* fields = result->Fetch();
+        StatsBoost::UpdateStatsPlayer(player, fields[1].GetUInt64(), fields[2].GetFloat(), false);
+    } while (result->NextRow());
+
+    CharacterDatabase.PQuery("DELETE FROM characters_stats_boost WHERE guid = %u", player->GetGUID());
 
 }

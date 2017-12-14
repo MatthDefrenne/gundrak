@@ -7,8 +7,8 @@ public:
 	StatsBoost();
 	~StatsBoost();
 
-	static std::string GetStatsPoints(Player* player);
-	static void UpdateStatsPlayer(Player* player, uint32 stats, float amount);
+	static uint64 GetStatsPoints(Player* player);
+	static void UpdateStatsPlayer(Player* player, uint32 stats, float amount, bool increase);
 	static void UpdateStatsPlayerOnLogin(Player* player);
     static void AddStatToPlayer(Player* player, uint32 amount, uint32 stat);
     static void RemoveStatsPointsToPlayer(Player* player, uint64 amount);
@@ -22,13 +22,16 @@ public:
     static std::map<const int, const uint64> MAX_UPDATE_STAT;
     static std::map<const int, std::pair<uint32 /*min*/, uint32 /*max*/>> RanksRequiredUpgrade;
     static std::map<ObjectGuid, uint64> MapTotalUpgradePlayers;
-
+    static std::map<ObjectGuid, uint64> MapTotalStatsPointsPlayer;
+    static void onLogoutSaveStats(Player* player);
+    static void ResetStatsAllocation(Player* player);
     static const int REWARD_ON_KILL_BOSS = 20;
     static const int REWARD_ON_LEVELUP = 5;
 
 private:
     static const int TOTAL_UPGRADABLE_STAT = 20;
     static void insertTotalUpgradePlayer(Player* player);
+    static void insertTotalStatsPointsPlayer(Player* player);
 
 
 

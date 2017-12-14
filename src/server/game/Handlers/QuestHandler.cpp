@@ -374,6 +374,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket& recvData)
 
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
         _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, guid, true);
+
 }
 
 void WorldSession::HandleQuestgiverCancel(WorldPacket& /*recvData*/)

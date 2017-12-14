@@ -12,13 +12,13 @@
 
 void sendGossipMenuStats(Player* player, Item* item) {
 
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_misc_book_11:30:30:-20:0|tIncrease bases stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_sword_27:30:30:-20:0|tIncrease my melee stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tIncrease my ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tIncrease my spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tIncrease my defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-
-    SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_misc_book_11:30:30:-20:0|tShow me bases stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_sword_27:30:30:-20:0|tShow me melee stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tShow me ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tShow me spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tShow me defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+    SendGossipMenuFor(player, 50000, item->GetGUID());
 }
 
 class StatsBoostSystem : PlayerScript {
@@ -49,54 +49,59 @@ class StatsBoostSystem : PlayerScript {
             StatsBoost::ShowRankByTotalUpgrade(player, msg);
         }
 
+       void OnLogout(Player* player) {
+           StatsBoost::onLogoutSaveStats(player);
+       }
+
+       void OnSave(Player* player) {
+           StatsBoost::onLogoutSaveStats(player);
+       }
 
 
         void OnLogin(Player* player, bool firstLogin) {
-            if (firstLogin) {
-                switch (player->getRace())
-                {
-                case RACE_HUMAN:
-                    player->LearnSpell(458, true);
+            switch (player->getRace())
+            {
+            case RACE_HUMAN:
+                player->LearnSpell(458, false);
 
-                    break;
-                case RACE_BLOODELF:
-                    player->LearnSpell(34795, true);
+                break;
+            case RACE_BLOODELF:
+                player->LearnSpell(34795, false);
 
-                    break;
-                case RACE_DRAENEI:
-                    player->LearnSpell(35710, true);
+                break;
+            case RACE_DRAENEI:
+                player->LearnSpell(35710, false);
 
-                    break;
-                case RACE_GNOME:
-                    player->LearnSpell(10873, true);
+                break;
+            case RACE_GNOME:
+                player->LearnSpell(10873, false);
 
-                    break;
-                case RACE_NIGHTELF:
-                    player->LearnSpell(10789, true);
+                break;
+            case RACE_NIGHTELF:
+                player->LearnSpell(10789, false);
 
-                    break;
-                case RACE_ORC:
-                    player->LearnSpell(6653, true);
+                break;
+            case RACE_ORC:
+                player->LearnSpell(6653, false);
 
-                    break;
-                case RACE_TAUREN:
-                    player->LearnSpell(15277, true);
+                break;
+            case RACE_TAUREN:
+                player->LearnSpell(15277, false);
 
-                    break;
-                case RACE_TROLL:
-                    player->LearnSpell(10796, true);
+                break;
+            case RACE_TROLL:
+                player->LearnSpell(10796, false);
 
-                    break;
-                case RACE_DWARF:
-                    player->LearnSpell(6777, true);
+                break;
+            case RACE_DWARF:
+                player->LearnSpell(6777, false);
 
-                    break;
-                case RACE_UNDEAD_PLAYER:
-                    player->LearnSpell(17464, true);
-                    break;
-                default:
-                    break;
-                }
+                break;
+            case RACE_UNDEAD_PLAYER:
+                player->LearnSpell(17464, false);
+                break;
+            default:
+                break;
             }
         }
 
@@ -113,7 +118,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     }
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + StatsBoost::GetStatsPoints(player) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
     switch (action)
     {
@@ -127,7 +132,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_blessingofagility:30:30:-20:0|t Upgrade Agility", GOSSIP_SENDER_MAIN, 4);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_magicalsentry:30:30:-20:0|t Upgrade Intellect", GOSSIP_SENDER_MAIN, 5);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+        SendGossipMenuFor(player, 50000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 2:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_battleshout:30:30:-20:0|t Upgrade melee attack power", GOSSIP_SENDER_MAIN, 6);
@@ -137,7 +142,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_sunder:30:30:-20:0|tUpgrade armor penetration rating", GOSSIP_SENDER_MAIN, 10);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_invisibilty:30:30:-20:0|tUpgrade haste melee", GOSSIP_SENDER_MAIN, 11);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+        SendGossipMenuFor(player, 50000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 3:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_trueshot:30:30:-20:0|t Upgrade Ranged attack power", GOSSIP_SENDER_MAIN, 12);
@@ -145,7 +150,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade Ranged hit rating", GOSSIP_SENDER_MAIN, 14);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_hunter_runningshot:30:30:-20:0|tUpgrade Haste ranged", GOSSIP_SENDER_MAIN, 15);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+        SendGossipMenuFor(player, 50000, item->GetGUID());
 
         break;
     case GOSSIP_ACTION_INFO_DEF + 4:
@@ -155,7 +160,7 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_slowingtotem:30:30:-20:0|tUpgrade Haste spell", GOSSIP_SENDER_MAIN, 19);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|tUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+        SendGossipMenuFor(player, 50000, item->GetGUID());
 
         break;
     case GOSSIP_ACTION_INFO_DEF + 5:
@@ -163,7 +168,11 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Parry rating", GOSSIP_SENDER_MAIN, 22);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Block", GOSSIP_SENDER_MAIN, 23);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
+        SendGossipMenuFor(player, 50000, item->GetGUID());
+        break;
+    case GOSSIP_ACTION_INFO_DEF + 6:
+        StatsBoost::ResetStatsAllocation(player);
+        CloseGossipMenuFor(player);
         break;
     }
 }
@@ -183,7 +192,7 @@ public:
             uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
             AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         }
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + StatsBoost::GetStatsPoints(player) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         sendGossipMenuStats(player, item);
         return false; // Cast the spell on use normally
     }

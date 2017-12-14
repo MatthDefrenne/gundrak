@@ -3105,6 +3105,10 @@ void Spell::cast(bool skipCheck)
 
     if (lastSpellMod)
         modOwner->SetSpellModTakingSpell(lastSpellMod, true);
+
+    if (m_spellInfo->Id == 8690)
+        modOwner->GetSpellHistory()->ResetCooldown(8690, true);
+
 }
 
 void Spell::_cast(bool skipCheck)

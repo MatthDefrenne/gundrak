@@ -85,6 +85,7 @@
 #include "WeatherMgr.h"
 #include "WhoListStorage.h"
 #include "WorldSession.h"
+#include "StatsBoost.h"
 
 #include <boost/asio/ip/address.hpp>
 
@@ -2645,8 +2646,10 @@ void World::KickAll()
     m_QueuedPlayer.clear();                                 // prevent send queue update packet and login queued sessions
 
     // session not removed at kick and will removed in next update tick
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
+        StatsBoost::onLogoutSaveStats(itr->second->GetPlayer());
         itr->second->KickPlayer();
+    }
 }
 
 /// Kick (and save) all players with security level less `sec`

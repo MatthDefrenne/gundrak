@@ -67,8 +67,8 @@ public:
             44207, 44208, 48444, 48445, 33891, 52374, 57532, 59921,
             52372, 49142, 52375, 47633, 47632, 52373, 50536, 27214,
             47822, 11682, 11681, 5857, 1010, 24907, 24905, 53227,
-            61391, 61390, 61388, 61387, 64801, 5421, 9635, 1178,
-            20186, 20185, 20184, 20187, 25899, 24406, 50581, 30708
+            61391, 61390, 61388, 61387, 64801, 5421, 9635, 1178, 20647,
+            20186, 20185, 20184, 20187, 25899, 24406, 50581, 30708, 7160,
         };
 
         ignoreSpells = std::vector<uint32>(temp, temp + sizeof(temp) / sizeof(temp[0]));
@@ -101,8 +101,14 @@ public:
         case CLASS_DEATH_KNIGHT:
             family = SPELLFAMILY_DEATHKNIGHT;
             break;
-        case CLASS_WARRIOR:
+        case CLASS_WARRIOR: {
             family = SPELLFAMILY_WARRIOR;
+            if (player->getLevel() == 3)
+                player->LearnSpell(5308, false);
+
+            if (player->getLevel() == 6)
+                player->LearnSpell(3124, false);
+        }
             break;
         case CLASS_PRIEST:
             family = SPELLFAMILY_PRIEST;
@@ -113,8 +119,17 @@ public:
         case CLASS_PALADIN:
             family = SPELLFAMILY_PALADIN;
             break;
-        case CLASS_HUNTER:
+        case CLASS_HUNTER: {
             family = SPELLFAMILY_HUNTER;
+            if (player->getLevel() == 10) {
+                player->LearnSpell(1515, false);
+                player->LearnSpell(883, false);
+                player->LearnSpell(2641, false);
+                player->LearnSpell(6991, false);
+                player->LearnSpell(5149, false);
+                player->LearnSpell(982, false);
+            }
+        }
             break;
         case CLASS_DRUID:
             family = SPELLFAMILY_DRUID;

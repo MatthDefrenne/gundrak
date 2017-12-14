@@ -95,6 +95,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "StatsBoost.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -15182,6 +15183,9 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
+
+    if(this->getLevel() <= quest->GetQuestLevel())
+        StatsBoost::GiveStatsPointsToPlayer(this, 1);
 
     sScriptMgr->OnQuestStatusChange(this, quest_id);
 }
