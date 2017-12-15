@@ -283,7 +283,7 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
     costToUpgradeStat = required[0 /*RANK*/];
 
     if (statsPoints < costToUpgradeStat) {
-        player->GetSession()->SendAreaTriggerMessage("you don't have enough of stats points");
+        player->GetSession()->SendAreaTriggerMessage("You don't have enough knowledge points");
         return;
     }
 
@@ -318,7 +318,7 @@ void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
         StatsBoost::MapTotalStatsPointsPlayer[player->GetGUID()] = (*it).second + amount;
     // ----------------------------------------------------------------------------------
 
-    std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " stats points. You can use your Grimoire of Stats allocation in your inventory to spend it.";
+    std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " point(s) of knowledge. You can use your Grimoire of Stats allocation in your inventory to spend it.";
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
     player->GetSession()->SendAreaTriggerMessage(pchar);
@@ -501,3 +501,4 @@ void StatsBoost::ResetStatsAllocation(Player* player) {
     CharacterDatabase.PQuery("DELETE FROM characters_stats_boost WHERE guid = %u", player->GetGUID());
 
 }
+

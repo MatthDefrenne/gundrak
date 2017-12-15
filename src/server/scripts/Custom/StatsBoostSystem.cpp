@@ -9,6 +9,8 @@
 #include "DatabaseEnv.h"
 #include "StatsBoost.h"
 #include "Group.h"
+#include "GameObject.h"
+#include "GameObjectAI.h"
 
 void sendGossipMenuStats(Player* player, Item* item) {
 
@@ -17,7 +19,7 @@ void sendGossipMenuStats(Player* player, Item* item) {
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tShow me ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tShow me spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tShow me defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_disenchant:30:30:-20:0|t|cff003939Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
     SendGossipMenuFor(player, 50000, item->GetGUID());
 }
 
@@ -110,15 +112,15 @@ class StatsBoostSystem : PlayerScript {
         }
 };
 
-void sendMenuGossip(Player* player, Item* item, uint32 action) {
+void sendMenuGossip(Player* player, Item* item, uint32& action) {
 
-    ClearGossipMenuFor(player); // Clears old options
+                ClearGossipMenuFor(player); // Clears old options
     if (player->getLevel() >= 60) {
         uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
         uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     }
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " point(s) of knowledge", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
     switch (action)
     {
@@ -171,6 +173,11 @@ void sendMenuGossip(Player* player, Item* item, uint32 action) {
         SendGossipMenuFor(player, 50000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 6:
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        SendGossipMenuFor(player, 50000, item->GetGUID());
+        break;
+    case GOSSIP_ACTION_INFO_DEF + 7:
         StatsBoost::ResetStatsAllocation(player);
         CloseGossipMenuFor(player);
         break;
@@ -181,7 +188,7 @@ class StatsBoostItem : ItemScript {
 public:
     StatsBoostItem() : ItemScript("StatsBoostItem") { }
 
-    uint32 lastSavedAction;
+    std::map<ObjectGuid, uint32> MaplastSavedAction;
 
     bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/) override // Any hook here
     {
@@ -192,7 +199,7 @@ public:
             uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
             AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         }
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " stats point(s)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " point(s) of knowledge", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         sendGossipMenuStats(player, item);
         return false; // Cast the spell on use normally
     }
@@ -204,18 +211,55 @@ public:
         if (action <= 23) {
             StatsBoost::AddStatToPlayer(player, 1.f, action);
         }
-        else if (action != 1000)
-            lastSavedAction = action;
+        else if (action >= 1000)
+            MaplastSavedAction[player->GetGUID()] = action;
         else
-            lastSavedAction = 1000;
+            MaplastSavedAction[player->GetGUID()] = 1000;
 
 
-        sendMenuGossip(player, item, lastSavedAction);
-
+        sendMenuGossip(player, item, MaplastSavedAction[player->GetGUID()]);
     }
 };
+
+class StatsBoostGobject : public GameObjectScript
+{
+public:
+    StatsBoostGobject() : GameObjectScript("StatsBoostGobject") { }
+
+    struct gobject_stats_boost : public GameObjectAI
+    {
+        gobject_stats_boost(GameObject* go) : GameObjectAI(go) { }
+
+        bool GossipHello(Player* player) override
+        {
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM gameobject_statsboost WHERE guid = %u AND goGuid = %u", player->GetGUID(), me->GetGUID());
+
+            if (!result) {
+                StatsBoost::GiveStatsPointsToPlayer(player, 15);
+                uint64 guid = me->GetGUID();
+                CharacterDatabase.PQuery("INSERT INTO gameobject_statsboost (guid, goGuid) VALUES (%u, %u)", player->GetGUID(), guid);
+                me->SendObjectDeSpawnAnim(me->GetGUID());
+                CloseGossipMenuFor(player);
+            }
+            else {
+                player->GetSession()->SendAreaTriggerMessage("You've already discovered this artefact!");
+                CloseGossipMenuFor(player);
+            }
+
+            return true;
+        }
+    };
+
+    GameObjectAI* GetAI(GameObject* go) const override
+    {
+        return new gobject_stats_boost(go);
+    }
+};
+
+
 void AddSC_BoostSystemScript() // Add to scriptloader normally
 {
     new StatsBoostItem();
     new StatsBoostSystem();
+    new StatsBoostGobject();
 }

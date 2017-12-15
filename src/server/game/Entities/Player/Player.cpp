@@ -15190,7 +15190,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     sScriptMgr->OnQuestStatusChange(this, quest_id);
 }
 
-void Player::SetRewardedQuest(uint32 quest_id)
+void Player::SetRewardedQuest(uint32 quest_id)  
 {
     m_RewardedQuests.insert(quest_id);
     m_RewardedQuestsSave[quest_id] = QUEST_DEFAULT_SAVE_TYPE;
