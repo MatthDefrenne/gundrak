@@ -122,6 +122,7 @@ class TC_GAME_API ReputationMgr
         }
         bool ModifyReputation(FactionEntry const* factionEntry, int32 standing, bool spillOverOnly = false)
         {
+
             return SetReputation(factionEntry, standing, true, spillOverOnly);
         }
 

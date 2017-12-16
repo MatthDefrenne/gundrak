@@ -26,6 +26,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "StatsBoost.h"
 
 const int32 ReputationMgr::PointsInRank[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
 
@@ -354,6 +355,7 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
         // only this faction gets reported to client, even if it has no own visible standing
         SendState(&faction->second);
     }
+
     return res;
 }
 
@@ -399,7 +401,7 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_EXALTED_REPUTATION, factionEntry->ID);
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_REVERED_REPUTATION, factionEntry->ID);
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_HONORED_REPUTATION, factionEntry->ID);
-
+        StatsBoost::RewardStatsPointsOnUpgradeReputation(_player, factionEntry->ID);
         return true;
     }
     return false;
@@ -599,11 +601,11 @@ void ReputationMgr::UpdateRankCounters(ReputationRank old_rank, ReputationRank n
         --_reveredFactionCount;
     if (old_rank >= REP_HONORED)
         --_honoredFactionCount;
-
-    if (new_rank >= REP_EXALTED)
+    if (new_rank >= REP_EXALTED) 
         ++_exaltedFactionCount;
-    if (new_rank >= REP_REVERED)
+    if (new_rank >= REP_REVERED) 
         ++_reveredFactionCount;
     if (new_rank >= REP_HONORED)
         ++_honoredFactionCount;
+  
 }

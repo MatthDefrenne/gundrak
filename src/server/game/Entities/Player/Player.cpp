@@ -6608,6 +6608,7 @@ void Player::RewardReputation(Unit* victim, float rate)
         uint32 current_reputation_rank1 = GetReputationMgr().GetRank(factionEntry1);
         if (factionEntry1)
             GetReputationMgr().ModifyReputation(factionEntry1, donerep1, current_reputation_rank1 > Rep->ReputationMaxCap1);
+
     }
 
     if (Rep->RepFaction2 && (!Rep->TeamDependent || team == HORDE))
@@ -6619,7 +6620,9 @@ void Player::RewardReputation(Unit* victim, float rate)
         uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
         if (factionEntry2)
             GetReputationMgr().ModifyReputation(factionEntry2, donerep2, current_reputation_rank2 > Rep->ReputationMaxCap2);
+
     }
+
 }
 
 // Calculate how many reputation points player gain with the quest
@@ -6664,6 +6667,8 @@ void Player::RewardReputation(Quest const* quest)
 
         if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(quest->RewardFactionId[i]))
             GetReputationMgr().ModifyReputation(factionEntry, rep);
+
+
     }
 }
 

@@ -11,6 +11,7 @@
 #include "Group.h"
 #include "GameObject.h"
 #include "GameObjectAI.h"
+#include "ObjectMgr.h"
 
 void sendGossipMenuStats(Player* player, Item* item) {
 
@@ -20,12 +21,16 @@ void sendGossipMenuStats(Player* player, Item* item) {
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tShow me spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tShow me defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_disenchant:30:30:-20:0|t|cff003939Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
-    SendGossipMenuFor(player, 50000, item->GetGUID());
+    SendGossipMenuFor(player, 90000, item->GetGUID());
 }
 
 class StatsBoostSystem : PlayerScript {
 
+
+   
     public:
+
+        std::map<ObjectGuid, ObjectGuid> mapLastKillPlayers;
         StatsBoostSystem() : PlayerScript("StatsBoostSystem") { }
 
         void OnLevelChanged(Player* player, uint8 oldlevel) override {           // We notice the player he as a new points
@@ -34,12 +39,27 @@ class StatsBoostSystem : PlayerScript {
         }
 
         void OnCreatureKill(Player* killer, Creature* killed) {
+            if (killed->GetCreatureTemplate()->rank == CREATURE_ELITE_RARE)
+                StatsBoost::GiveStatsPointsToPlayer(killer, 15);
+
             StatsBoost::RewardStatsPointsOnKillBoss(killer, killed);
         }
 
+        void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental) {
+        }
+
         void OnPVPKill(Player* killer, Player* killed) {
+
             if (killer->GetGUID() == killed->GetGUID())
                 return;
+
+            auto it = mapLastKillPlayers.find(killer->GetGUID());
+
+            if (it != mapLastKillPlayers.end())
+                if ((*it).second != killed->GetGUID()) {
+                    mapLastKillPlayers[killer->GetGUID()] = killed->GetGUID();
+                    StatsBoost::GiveStatsPointsToPlayer(killer, 10);
+               }
         }
 
 
@@ -115,11 +135,9 @@ class StatsBoostSystem : PlayerScript {
 void sendMenuGossip(Player* player, Item* item, uint32& action) {
 
                 ClearGossipMenuFor(player); // Clears old options
-    if (player->getLevel() >= 60) {
-        uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
-        uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-    }
+    uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
+    uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " point(s) of knowledge", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
     switch (action)
@@ -134,7 +152,7 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_blessingofagility:30:30:-20:0|t Upgrade Agility", GOSSIP_SENDER_MAIN, 4);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_magicalsentry:30:30:-20:0|t Upgrade Intellect", GOSSIP_SENDER_MAIN, 5);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
+        SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 2:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_battleshout:30:30:-20:0|t Upgrade melee attack power", GOSSIP_SENDER_MAIN, 6);
@@ -144,7 +162,7 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_sunder:30:30:-20:0|tUpgrade armor penetration rating", GOSSIP_SENDER_MAIN, 10);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_invisibilty:30:30:-20:0|tUpgrade haste melee", GOSSIP_SENDER_MAIN, 11);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
+        SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 3:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_trueshot:30:30:-20:0|t Upgrade Ranged attack power", GOSSIP_SENDER_MAIN, 12);
@@ -152,8 +170,7 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade Ranged hit rating", GOSSIP_SENDER_MAIN, 14);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_hunter_runningshot:30:30:-20:0|tUpgrade Haste ranged", GOSSIP_SENDER_MAIN, 15);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
-
+        SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 4:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Spells power", GOSSIP_SENDER_MAIN, 16);
@@ -162,20 +179,19 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_slowingtotem:30:30:-20:0|tUpgrade Haste spell", GOSSIP_SENDER_MAIN, 19);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|tUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
-
+        SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 5:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Dodge rating", GOSSIP_SENDER_MAIN, 21);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Parry rating", GOSSIP_SENDER_MAIN, 22);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Block", GOSSIP_SENDER_MAIN, 23);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
+        SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 6:
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        SendGossipMenuFor(player, 50000, item->GetGUID());
+        SendGossipMenuFor(player, 90000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 7:
         StatsBoost::ResetStatsAllocation(player);
@@ -194,11 +210,9 @@ public:
     {
 
         ClearGossipMenuFor(player);
-        if (player->getLevel() >= 60) {
-            uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
-            uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
-            AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        }
+        uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
+        uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_arcane_arcane04:30:30:-20:0|tYou have " + std::to_string(StatsBoost::GetStatsPoints(player)) + " point(s) of knowledge", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         sendGossipMenuStats(player, item);
         return false; // Cast the spell on use normally
@@ -225,19 +239,20 @@ class StatsBoostGobject : public GameObjectScript
 {
 public:
     StatsBoostGobject() : GameObjectScript("StatsBoostGobject") { }
-
     struct gobject_stats_boost : public GameObjectAI
     {
-        gobject_stats_boost(GameObject* go) : GameObjectAI(go) { }
+
+
+        gobject_stats_boost(GameObject* go) : GameObjectAI(go) {
+
+        }
 
         bool GossipHello(Player* player) override
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM gameobject_statsboost WHERE guid = %u AND goGuid = %u", player->GetGUID(), me->GetGUID());
-
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM gameobject_statsboost WHERE guid = %u AND position_x = %f AND position_y = %f AND position_z = %f", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
             if (!result) {
-                StatsBoost::GiveStatsPointsToPlayer(player, 15);
-                uint64 guid = me->GetGUID();
-                CharacterDatabase.PQuery("INSERT INTO gameobject_statsboost (guid, goGuid) VALUES (%u, %u)", player->GetGUID(), guid);
+                StatsBoost::GiveStatsPointsToPlayer(player, 8);
+                CharacterDatabase.PQuery("INSERT INTO gameobject_statsboost VALUES (%u, %f, %f, %f)", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
                 me->SendObjectDeSpawnAnim(me->GetGUID());
                 CloseGossipMenuFor(player);
             }

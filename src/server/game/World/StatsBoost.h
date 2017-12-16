@@ -18,6 +18,7 @@ public:
     static uint32 GetRequiredUpgradeToReachNextRank(Player* player);
     static std::vector<int> CalculateUpgrade(Player* player, uint64 totalUpgrade);
     static uint64 GetTotalUpgradePlayer(Player* player);
+    static void RewardStatsPointsOnUpgradeReputation(Player * player, uint32 factionID);
     static std::string GetRankImage(Player* player, std::string size, std::string move);
     static std::map<const int, const uint64> MAX_UPDATE_STAT;
     static std::map<const int, std::pair<uint32 /*min*/, uint32 /*max*/>> RanksRequiredUpgrade;
@@ -25,7 +26,7 @@ public:
     static std::map<ObjectGuid, uint64> MapTotalStatsPointsPlayer;
     static void onLogoutSaveStats(Player* player);
     static void ResetStatsAllocation(Player* player);
-    static const int REWARD_ON_KILL_BOSS = 20;
+    static const int REWARD_ON_KILL_BOSS = 25;
     static const int REWARD_ON_LEVELUP = 5;
 
 private:

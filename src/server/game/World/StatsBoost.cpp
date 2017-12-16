@@ -12,36 +12,40 @@
 #include "Creature.h"
 #include "Chat.h"
 #include "World.h"
-
+#include "ReputationMgr.h"
+#include "Map.h"
+#include "ObjectMgr.h"
 std::map<const int, const uint64> StatsBoost::MAX_UPDATE_STAT = {
-    { 1 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 2 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 4 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 5 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 19 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 11 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 15 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 20 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
-    { 21 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
-    { 22 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
-    { 23 /* AGILITY */, 200 /* MAX UPGRADABLE */ },
+    { 1 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 2 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 3 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
+    { 5 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 6 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
+    { 12 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
+    { 19 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 11 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 15 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 20 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 21 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 22 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 23 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
 };
 
 std::map<const int /*rank*/, std::pair<uint32 /*min*/, uint32 /*max*/>> StatsBoost::RanksRequiredUpgrade = {
     { 1, { 0, 500 } },
-    { 2, { 500, 600 } },
-    { 3, { 600, 700 } },
-    { 4, { 700, 800 } },
-    { 5, { 800, 900 } },
-    { 6, { 900, 1000 } },
-    { 7, { 1000, 1500 } },
-    { 8, { 1500, 2500 } },
-    { 9, { 2500, 4500 } },
-    { 10, { 4500, 9000 } },
-    { 11, { 9000, 18000 } },
-    { 12, { 18000, 30000 } },
-    { 14, { 30000, 60000 } },
-    { 15, { 60000, 100000 } },
+    { 2, { 500, 1000 } },
+    { 3, { 1000, 1500 } },
+    { 4, { 1500, 2000 } },
+    { 5, { 1500, 2000 } },
+    { 6, { 2000, 2500 } },
+    { 7, { 2500, 3000 } },
+    { 8, { 3000, 3500 } },
+    { 9, { 3500, 4000 } },
+    { 10, { 4000, 4500 } },
+    { 11, { 4500, 5000 } },
+    { 12, { 5000, 5500 } },
+    { 14, { 5500, 6000 } },
+    { 15, { 6500, 100000 } },
 };
 
 std::map<ObjectGuid, uint64> StatsBoost::MapTotalUpgradePlayers = {};
@@ -214,9 +218,9 @@ void StatsBoost::UpdateStatsPlayer(Player * player, uint32 stat, float amount, b
         break;
     case 22:
         if (increase)
-        player->ApplyRatingMod(CR_PARRY, amount, true);
+        player->ApplyRatingMod(CR_PARRY, player->GetRatingBonusValue(CR_PARRY) + amount, true);
         else
-            player->ApplyRatingMod(CR_PARRY, -amount, true);
+            player->ApplyRatingMod(CR_PARRY, player->GetRatingBonusValue(CR_PARRY) - amount, true);
         break;
     case 23:
         if (increase)
@@ -321,25 +325,23 @@ void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
     std::string amountToChar = "Congratulations, you have earned " + std::to_string(amount) + " point(s) of knowledge. You can use your Grimoire of Stats allocation in your inventory to spend it.";
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
-    player->GetSession()->SendAreaTriggerMessage(pchar);
+
+    if(player->getLevel() > 10)
+        player->GetSession()->SendAreaTriggerMessage(pchar);
 }
 
 void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
 
     uint32 level = killer->getLevel();
 
-    if (level > 60)
-        level += 5;
-
-    if (!killed->IsDungeonBoss() || level >= killed->getLevel())
-        return;
+    if(!killer->GetMap()->IsNonRaidDungeon())
+        return; 
 
     Group* group = killer->GetGroup();
 
-    if (!group) {
-        StatsBoost::GiveStatsPointsToPlayer(killer, StatsBoost::REWARD_ON_KILL_BOSS);
+    if (!group)
         return;
-    }
+
 
     bool canRewardGroup = false;
 
@@ -347,25 +349,34 @@ void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
     {
         Player* player = ObjectAccessor::FindPlayer((*it).guid);
         if (player) {
-            canRewardGroup = player->getLevel() >= killed->getLevel();
+            if (killed->isWorldBoss()) {
+                canRewardGroup = player->getLevel() >= killed->getLevel() + 3; // Allow 3 levels difference when you kill a world boss
+            }
+            else if (killed->IsDungeonBoss()) {
+                if (player->getLevel() == sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+                    canRewardGroup = player->getLevel() >= killed->getLevel() + 3; // Allow 3 levels difference at level max;
+                else
+                    canRewardGroup = player->getLevel() >= killed->getLevel() + 5; // Allow 5 levels under the level max
+            }
         }
+       
+          
     }
 
     for (auto it2 = group->GetMemberSlots().begin(); it2 != group->GetMemberSlots().end(); ++it2)
     {
         Player* player = ObjectAccessor::FindPlayer((*it2).guid);
         if (player && canRewardGroup) {
-            StatsBoost::GiveStatsPointsToPlayer(player, StatsBoost::REWARD_ON_KILL_BOSS);
+            if (killed->isWorldBoss())
+                StatsBoost::GiveStatsPointsToPlayer(killer, StatsBoost::REWARD_ON_KILL_BOSS * 2);
+            else if (killed->IsDungeonBoss())
+                StatsBoost::GiveStatsPointsToPlayer(killer, StatsBoost::REWARD_ON_KILL_BOSS);
         }
     }
 }
 
 void StatsBoost::ShowRankByTotalUpgrade(Player * player, std::string & msg)
 {
-
-    if (player->getLevel() < 60)
-        return;
-
     msg = StatsBoost::GetRankImage(player, "18", "0") + msg;
 }
 
@@ -447,6 +458,8 @@ uint64 StatsBoost::GetTotalUpgradePlayer(Player * player)
     return totalUpgrade;
 }
 
+
+
 void StatsBoost::insertTotalUpgradePlayer(Player * player)
 {
     uint64 totalUpgrade;
@@ -500,5 +513,33 @@ void StatsBoost::ResetStatsAllocation(Player* player) {
 
     CharacterDatabase.PQuery("DELETE FROM characters_stats_boost WHERE guid = %u", player->GetGUID());
 
+}
+
+void getReputationRank(Player * player, uint32 factionID, uint32 rank) {
+    
+}
+void StatsBoost::RewardStatsPointsOnUpgradeReputation(Player * player, uint32 factionID)
+{
+    ReputationRank rank = player->GetReputationRank(factionID);
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM characters_reputation_rank WHERE guid = %u AND faction = %u AND rank = %u", player->GetGUID(), factionID, rank);
+    if (!result) {
+        CharacterDatabase.PQuery("INSERT INTO characters_reputation_rank VALUES (%u, %u, %u)", player->GetGUID(), factionID, rank);
+        switch (rank)
+        {
+        case REP_FRIENDLY:
+            StatsBoost::GiveStatsPointsToPlayer(player, 2); 
+            break;
+        case REP_HONORED:
+            StatsBoost::GiveStatsPointsToPlayer(player, 5);
+            break;
+        case REP_REVERED:
+            StatsBoost::GiveStatsPointsToPlayer(player, 10);
+            break;
+        case REP_EXALTED:
+            StatsBoost::GiveStatsPointsToPlayer(player, 20);
+            break;
+        }
+    }
+ 
 }
 
