@@ -48,6 +48,7 @@
 #include "WeatherMgr.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "CustomRates.h"
 #include <boost/asio/ip/address_v4.hpp>
 
 // temporary hack until includes are sorted out (don't want to pull in Windows.h)
@@ -64,6 +65,7 @@ public:
     {
         static std::vector<ChatCommand> commandTable =
         {
+            { "rate",             rbac::RBAC_PERM_COMMAND_XP,          false, &HandleStartCommand,          "" },
             { "additem",          rbac::RBAC_PERM_COMMAND_ADDITEM,          false, &HandleAddItemCommand,          "" },
             { "additemset",       rbac::RBAC_PERM_COMMAND_ADDITEMSET,       false, &HandleAddItemSetCommand,       "" },
             { "appear",           rbac::RBAC_PERM_COMMAND_APPEAR,           false, &HandleAppearCommand,           "" },
@@ -117,6 +119,36 @@ public:
             { "mailbox",          rbac::RBAC_PERM_COMMAND_MAILBOX,          false, &HandleMailBoxCommand,          "" },
         };
         return commandTable;
+    }
+
+
+
+    static bool HandleStartCommand(ChatHandler * handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->GetSession()->GetPlayer();
+
+        if (!player)
+            return false;
+
+        if (player->getLevel() != 1) {
+            handler->SendSysMessage("To be able to choose your difficulty you need to be level 1.");
+            return false;
+        }
+
+        float rate = (uint32)atoi(args);
+
+        if (!rate) {
+            handler->SendSysMessage("[Custom rate]: To choose your rates experience kill and quest, select a number between 1 and 5");
+            return false;
+        }
+
+        CustomRates::setCustomRate(player, rate);
+        handler->SendSysMessage("Your rates was fixed to x %f, have fun!", rate);
+
+        return true;
     }
 
     static bool HandlePvPstatsCommand(ChatHandler * handler, char const* /*args*/)

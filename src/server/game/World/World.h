@@ -863,6 +863,7 @@ class TC_GAME_API World
         typedef std::map<uint8, uint8> AutobroadcastsWeightMap;
         AutobroadcastsWeightMap m_AutobroadcastsWeights;
 
+
         void ProcessQueryCallbacks();
 
         void SendGuidWarning();

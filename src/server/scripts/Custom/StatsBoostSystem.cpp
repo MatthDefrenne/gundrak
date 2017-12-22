@@ -24,6 +24,26 @@ void sendGossipMenuStats(Player* player, Item* item) {
     SendGossipMenuFor(player, 90000, item->GetGUID());
 }
 
+void referral(Player* player) {
+    QueryResult result = LoginDatabase.PQuery("SELECT COUNT(*) FROM account WHERE last_ip = %u", player->GetSession()->GetAccountId());
+    Field* field = result->Fetch();
+    bool doubleIP = field[0].GetInt64() == 1;
+    if (!doubleIP) {
+        QueryResult result2 = LoginDatabase.PQuery("SELECT email_verified, referral_id FROM account WHERE id = %u", player->GetSession()->GetAccountId());
+        Field* field2 = result2->Fetch();
+        bool emailVerified = field2[0].GetUInt64() == 1;
+        bool referral = field2[1].GetUInt64() != 0;
+        player->GetSession()->SendAreaTriggerMessage("%u", field2[1].GetUInt64());
+        if (emailVerified && referral) {
+            QueryResult result3 = LoginDatabase.PQuery("SELECT * FROM referrals WHERE id = %u AND idReferral = %u", player->GetSession()->GetAccountId(), field2[1].GetUInt64() /*referralId*/);
+            if (!result3) {
+                LoginDatabase.PQuery("UPDATE account SET ptr = ptr + 1 WHERE id = %u", field2[1].GetUInt64() /*referralId*/);
+                LoginDatabase.PQuery("INSERT INTO referrals VALUES (%u, %u, NOW())", player->GetSession()->GetAccountId(), field2[1].GetUInt64());
+            }
+        }
+    }
+}
+
 class StatsBoostSystem : PlayerScript {
 
 
@@ -34,6 +54,10 @@ class StatsBoostSystem : PlayerScript {
         StatsBoostSystem() : PlayerScript("StatsBoostSystem") { }
 
         void OnLevelChanged(Player* player, uint8 oldlevel) override {           // We notice the player he as a new points
+
+            if (player->getLevel() == 20) {
+                referral(player);
+            }
             int mupltiplicator = player->getLevel() - oldlevel;
             StatsBoost::GiveStatsPointsToPlayer(player, (StatsBoost::REWARD_ON_LEVELUP * mupltiplicator));
         }
@@ -134,7 +158,7 @@ class StatsBoostSystem : PlayerScript {
 
 void sendMenuGossip(Player* player, Item* item, uint32& action) {
 
-                ClearGossipMenuFor(player); // Clears old options
+    ClearGossipMenuFor(player); // Clears old options
     uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
     uint64 requiredNextRank = StatsBoost::GetRequiredUpgradeToReachNextRank(player);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, StatsBoost::GetRankImage(player, "30", "-20") + "Next rank : " + std::to_string(totalUpgrade) + " / " + std::to_string(requiredNextRank), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);

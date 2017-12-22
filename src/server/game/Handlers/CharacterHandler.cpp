@@ -51,6 +51,7 @@
 #include "QueryHolder.h"
 #include "World.h"
 #include "StatsBoost.h"
+#include "CustomRates.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -993,6 +994,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ON_LOGIN, 1);
 
     StatsBoost::UpdateStatsPlayerOnLogin(_player);
+    CustomRates::setCustomCommandeOnLogin(_player);
 
 
     sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);

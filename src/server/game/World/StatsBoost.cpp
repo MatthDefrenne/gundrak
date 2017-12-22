@@ -18,12 +18,20 @@
 std::map<const int, const uint64> StatsBoost::MAX_UPDATE_STAT = {
     { 1 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 2 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
-    { 3 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
+    { 3 /* AGILITY */, 300 /* MAX UPGRADABLE */ },
+    { 4 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 5 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
-    { 6 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 12 /* AGILITY */, 500 /* MAX UPGRADABLE */ },
-    { 19 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 6 /* AGILITY */, 300 /* MAX UPGRADABLE */ },
+    { 7 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 8 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 9 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 10 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 11 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 12 /* AGILITY */, 300 /* MAX UPGRADABLE */ },
+    { 19 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 16 /* AGILITY */, 300 /* MAX UPGRADABLE */ },
+    { 17 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
+    { 18 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 15 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 20 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 21 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
@@ -33,7 +41,7 @@ std::map<const int, const uint64> StatsBoost::MAX_UPDATE_STAT = {
 
 std::map<const int /*rank*/, std::pair<uint32 /*min*/, uint32 /*max*/>> StatsBoost::RanksRequiredUpgrade = {
     { 1, { 0, 500 } },
-    { 2, { 500, 1000 } },
+    { 2, { 500, 2000 } },
     { 3, { 1000, 1500 } },
     { 4, { 1500, 2000 } },
     { 5, { 1500, 2000 } },
@@ -274,14 +282,8 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
         return;
     }
 
-    QueryResult result2 = CharacterDatabase.PQuery("SELECT totalUpgrade FROM characters WHERE guid = %u", player->GetGUID());
-
-    if (!result2)
-        return;
-
-    Field* fields2 = result2->Fetch();
     uint64 statsPoints = StatsBoost::GetStatsPoints(player);
-    uint64 totalUpgrade = fields2[0].GetUInt64();
+    uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
 
     std::vector<int> required = StatsBoost::CalculateUpgrade(player, totalUpgrade);
     costToUpgradeStat = required[0 /*RANK*/];
@@ -326,7 +328,7 @@ void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
     char const *pchar = amountToChar.c_str();  //use char const* as target type
     ChatHandler(player->GetSession()).PSendSysMessage(pchar);
 
-    if(player->getLevel() > 10)
+    if(player->getLevel() < 10)
         player->GetSession()->SendAreaTriggerMessage(pchar);
 }
 
