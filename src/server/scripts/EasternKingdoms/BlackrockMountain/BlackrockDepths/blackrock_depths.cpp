@@ -196,7 +196,7 @@ public:
         /// @todo move them to center
         void SummonRingBoss()
         {
-            if (Creature* tmp = me->SummonCreature(RingBoss[rand32() % 6], 644.300f, -175.989f, -53.739f, 3.418f, TEMPSUMMON_DEAD_DESPAWN, 0))
+            if (Creature* tmp = me->SummonCreature(9027, 612.057678f, -196.340347f, 53.595787f, 3.418f, TEMPSUMMON_DEAD_DESPAWN, 0))
                 RingBossGUID = tmp->GetGUID();
 
             MobDeath_Timer = 2500;
@@ -317,23 +317,24 @@ public:
                         break;
                     case 6:
                         SummonRingMob();
-                        Event_Timer = 8000;
+                        Event_Timer = 16000;
                         break;
                     case 7:
                         me->SetVisible(true);
                         HandleGameObject(DATA_ARENA1, false);
                         Talk(SAY_TEXT6);
                         CanWalk = true;
-                        Event_Timer = 8000;
+                        Event_Timer = 18000;
+                        EventPhase = 8;
                         break;
                     case 8:
                         HandleGameObject(DATA_ARENA2, true);
-                        Event_Timer = 5000;
+                        Event_Timer = 22000;
                         break;
                     case 9:
                         me->SetVisible(false);
                         SummonRingBoss();
-                        Event_Timer = 0;
+                        Event_Timer = 23000;
                         break;
                     case 10:
                         //if quest, complete

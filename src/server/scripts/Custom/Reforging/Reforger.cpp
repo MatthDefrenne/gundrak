@@ -382,14 +382,6 @@ public:
                             for (uint8 i = 0; i < stat_type_max; ++i)
                             {
                                 bool cont = false;
-                                for (uint32 j = 0; j < pProto->StatsCount; ++j)
-                                {
-                                    if (statTypes[i] == pProto->ItemStat[j].ItemStatType) // skip existing stats on item
-                                    {
-                                        cont = true;
-                                        break;
-                                    }
-                                }
                                 if (cont)
                                     continue;
                                 if (const char* stat_name = GetStatName(statTypes[i]))

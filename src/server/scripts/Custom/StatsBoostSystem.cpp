@@ -86,15 +86,6 @@ class StatsBoostSystem : PlayerScript {
                }
         }
 
-
-        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg) {
-            StatsBoost::ShowRankByTotalUpgrade(player, msg);
-        }
-
-        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* channel) override {
-            StatsBoost::ShowRankByTotalUpgrade(player, msg);
-        }
-
        void OnLogout(Player* player) {
            StatsBoost::onLogoutSaveStats(player);
        }
@@ -102,6 +93,26 @@ class StatsBoostSystem : PlayerScript {
        void OnSave(Player* player) {
            StatsBoost::onLogoutSaveStats(player);
        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Player* /*receiver*/) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Group* /*group*/) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Guild* /*guild*/) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
+
+        void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* /*channel*/) {
+            StatsBoost::ShowRankByTotalUpgrade(player, msg);
+        }
 
 
         void OnLogin(Player* player, bool firstLogin) {
@@ -149,10 +160,6 @@ class StatsBoostSystem : PlayerScript {
             default:
                 break;
             }
-        }
-
-        void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild) override {
-            StatsBoost::ShowRankByTotalUpgrade(player, msg);
         }
 };
 
@@ -275,7 +282,7 @@ public:
         {
             QueryResult result = CharacterDatabase.PQuery("SELECT * FROM gameobject_statsboost WHERE guid = %u AND position_x = %f AND position_y = %f AND position_z = %f", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
             if (!result) {
-                StatsBoost::GiveStatsPointsToPlayer(player, 8);
+                StatsBoost::GiveStatsPointsToPlayer(player, 6);
                 CharacterDatabase.PQuery("INSERT INTO gameobject_statsboost VALUES (%u, %f, %f, %f)", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
                 me->SendObjectDeSpawnAnim(me->GetGUID());
                 CloseGossipMenuFor(player);

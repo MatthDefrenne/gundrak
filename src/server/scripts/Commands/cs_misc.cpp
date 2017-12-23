@@ -140,13 +140,19 @@ public:
 
         float rate = (uint32)atoi(args);
 
+
+        if (rate > 5) {
+            handler->SendSysMessage("Select a number between 1 and 5");
+            return false;
+        }
+
         if (!rate) {
             handler->SendSysMessage("[Custom rate]: To choose your rates experience kill and quest, select a number between 1 and 5");
             return false;
         }
 
         CustomRates::setCustomRate(player, rate);
-        handler->SendSysMessage("Your rates was fixed to x %f, have fun!", rate);
+        handler->SendSysMessage("Your rates was fixed, have fun!");
 
         return true;
     }
