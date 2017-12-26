@@ -110,7 +110,7 @@ public:
 
             if (!SummonedRend && HealthBelowPct(5))
             {
-                DoCast(me, SPELL_SUMMON_REND);
+                me->SummonCreature(10429, me->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 1800000);
                 me->RemoveAura(SPELL_REND_MOUNTS);
                 SummonedRend = true;
             }
