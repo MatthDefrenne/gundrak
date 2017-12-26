@@ -51,7 +51,25 @@ class StatsBoostSystem : PlayerScript {
     public:
 
         std::map<ObjectGuid, ObjectGuid> mapLastKillPlayers;
+        std::map<ObjectGuid, uint32> mapLastKillRarePlayer;
+
         StatsBoostSystem() : PlayerScript("StatsBoostSystem") { }
+
+
+        void killRare(Player* killer, Creature* killed) {
+            auto it = mapLastKillRarePlayer.find(killer->GetGUID());
+
+            if (it != mapLastKillRarePlayer.end()) {
+                if ((*it).second != killed->GetEntry()) {
+                    mapLastKillRarePlayer[killer->GetGUID()] = killed->GetEntry();
+                    StatsBoost::GiveStatsPointsToPlayer(killer, 12);
+                }
+            }
+            else {
+                mapLastKillRarePlayer[killer->GetGUID()] = killed->GetEntry();
+                StatsBoost::GiveStatsPointsToPlayer(killer, 12);
+            }
+        }
 
         void OnLevelChanged(Player* player, uint8 oldlevel) override {           // We notice the player he as a new points
 
@@ -64,7 +82,7 @@ class StatsBoostSystem : PlayerScript {
 
         void OnCreatureKill(Player* killer, Creature* killed) {
             if (killed->GetCreatureTemplate()->rank == CREATURE_ELITE_RARE)
-                StatsBoost::GiveStatsPointsToPlayer(killer, 15);
+                killRare(killer, killed);
 
             StatsBoost::RewardStatsPointsOnKillBoss(killer, killed);
         }
@@ -220,21 +238,19 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 6:
-        if (player->getLevel() >= 20) {
-            AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (cost : 1000 golds)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-        }
-        else {
-            AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (Free before level 20)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-        }
+        if (player->getLevel() >= 20)
+          AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (cost : 5 golds)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+        else
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (Free before level 20)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 7:
         if (player->getLevel() >= 20) {
             uint32 gold = player->GetMoney();
-            if (gold >= 10000000) {
+            if (gold >= 50000) {
                 StatsBoost::ResetStatsAllocation(player);
-                player->ModifyMoney(-10000000);
+                player->ModifyMoney(-50000);
             }
             else {
                 player->GetSession()->SendAreaTriggerMessage("You don't have enough of gold!");
