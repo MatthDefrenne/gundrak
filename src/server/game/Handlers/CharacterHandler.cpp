@@ -52,6 +52,9 @@
 #include "World.h"
 #include "StatsBoost.h"
 #include "CustomRates.h"
+#include "Battleground.h"
+#include "ArenaTeamMgr.h"
+#include "AccountMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -1002,6 +1005,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     TC_METRIC_EVENT("player_events", "Login", pCurrChar->GetName());
 
     delete holder;
+	if (pCurrChar->GetTeam() != pCurrChar->getCFSRace())
+        pCurrChar->FitPlayerInTeam(pCurrChar->GetBattleground() && !pCurrChar->GetBattleground()->isArena() ? true : false, pCurrChar->GetBattleground());
+	pCurrChar->RemoveAurasDueToSpell(44311);	
 }
 
 void WorldSession::HandleSetFactionAtWar(WorldPacket& recvData)

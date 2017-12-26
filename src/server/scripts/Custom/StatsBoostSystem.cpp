@@ -102,6 +102,10 @@ class StatsBoostSystem : PlayerScript {
                     mapLastKillPlayers[killer->GetGUID()] = killed->GetGUID();
                     StatsBoost::GiveStatsPointsToPlayer(killer, 10);
                }
+            else {
+                mapLastKillPlayers[killer->GetGUID()] = killed->GetGUID();
+                StatsBoost::GiveStatsPointsToPlayer(killer, 10);
+            }   
         }
 
        void OnLogout(Player* player) {
@@ -314,7 +318,7 @@ public:
         {
             QueryResult result = CharacterDatabase.PQuery("SELECT * FROM gameobject_statsboost WHERE guid = %u AND position_x = %f AND position_y = %f AND position_z = %f", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
             if (!result) {
-                StatsBoost::GiveStatsPointsToPlayer(player, 6);
+                StatsBoost::GiveStatsPointsToPlayer(player, 3);
                 CharacterDatabase.PQuery("INSERT INTO gameobject_statsboost VALUES (%u, %f, %f, %f)", player->GetGUID(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
                 me->SendObjectDeSpawnAnim(me->GetGUID());
                 CloseGossipMenuFor(player);

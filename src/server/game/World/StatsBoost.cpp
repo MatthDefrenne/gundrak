@@ -386,9 +386,9 @@ void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
         Player* player = ObjectAccessor::FindPlayer((*it2).guid);
         if (player && canRewardGroup) {
             if (killed->isWorldBoss())
-                StatsBoost::GiveStatsPointsToPlayer(killer, StatsBoost::REWARD_ON_KILL_BOSS * 2);
+                StatsBoost::GiveStatsPointsToPlayer(player, StatsBoost::REWARD_ON_KILL_BOSS * 2);
             else if (killed->IsDungeonBoss())
-                StatsBoost::GiveStatsPointsToPlayer(killer, StatsBoost::REWARD_ON_KILL_BOSS);
+                StatsBoost::GiveStatsPointsToPlayer(player, StatsBoost::REWARD_ON_KILL_BOSS);
         }
     }
 }
