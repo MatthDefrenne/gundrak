@@ -220,12 +220,28 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 6:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+        if (player->getLevel() >= 20) {
+            AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (cost : 1000 golds)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+        }
+        else {
+            AddGossipItemFor(player, GOSSIP_ICON_DOT, "|cff390000Confirm reset stats allocation (Free before level 20)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+        }
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90000, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 7:
-        StatsBoost::ResetStatsAllocation(player);
+        if (player->getLevel() >= 20) {
+            uint32 gold = player->GetMoney();
+            if (gold >= 10000000) {
+                StatsBoost::ResetStatsAllocation(player);
+                player->ModifyMoney(-10000000);
+            }
+            else {
+                player->GetSession()->SendAreaTriggerMessage("You don't have enough of gold!");
+            }
+        }
+        else 
+            StatsBoost::ResetStatsAllocation(player);
         CloseGossipMenuFor(player);
         break;
     }

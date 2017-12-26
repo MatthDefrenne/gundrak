@@ -15225,7 +15225,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
 
-    if(this->getLevel() <= quest->GetQuestLevel())
+    if((this->getLevel() <= quest->GetQuestLevel()) && !quest->IsRepeatable())
         StatsBoost::GiveStatsPointsToPlayer(this, 1);
 
     sScriptMgr->OnQuestStatusChange(this, quest_id);

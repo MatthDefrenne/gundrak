@@ -15,6 +15,8 @@
 #include "ReputationMgr.h"
 #include "Map.h"
 #include "ObjectMgr.h"
+#include "CustomRates.h"
+
 std::map<const int, const uint64> StatsBoost::MAX_UPDATE_STAT = {
     { 1 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
     { 2 /* AGILITY */, 250 /* MAX UPGRADABLE */ },
@@ -316,6 +318,20 @@ void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
 
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
 {
+
+    if (player->getLevel() != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
+        switch (uint64(CustomRates::get(player)))
+        {
+        case 1:
+            amount *= 3;
+            break;
+        case 2:
+            amount *= 2;
+            break;
+        default:
+            break;
+        }
+    }
 
     // Upgrade total Stats points -------------------------------------------------------
     auto it = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
