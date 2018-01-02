@@ -21,6 +21,7 @@ void AddSC_LearnSpellsOnLevelUp();
 void AddSC_store_commandscript();
 void AddSC_REFORGER_NPC();
 void  AddSC_Transmogrification();
+void AddSC_ItemEnchantmentScript();
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
 void AddCustomScripts()
@@ -30,4 +31,5 @@ void AddCustomScripts()
     AddSC_LearnSpellsOnLevelUp();
     AddSC_Transmogrification();
     AddSC_store_commandscript();
+    AddSC_ItemEnchantmentScript();
 }

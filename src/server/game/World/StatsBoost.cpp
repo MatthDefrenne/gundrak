@@ -264,6 +264,7 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
     uint64 MAX_UPDATE = 999999;
     uint64 costToUpgradeStat = 1;
 
+
     QueryResult result = CharacterDatabase.PQuery("SELECT amount FROM characters_stats_boost WHERE guid = %u and stat_type = %u", player->GetGUID(), stat);
 
     if (!result)
@@ -284,21 +285,26 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
         return;
     }
 
+
     uint64 statsPoints = StatsBoost::GetStatsPoints(player);
     uint64 totalUpgrade = StatsBoost::GetTotalUpgradePlayer(player);
 
     std::vector<int> required = StatsBoost::CalculateUpgrade(player, totalUpgrade);
-    costToUpgradeStat = required[0 /*RANK*/];
+    costToUpgradeStat = required[0 /*RANK*/] * uint32(amount);
 
     if (statsPoints < costToUpgradeStat) {
         player->GetSession()->SendAreaTriggerMessage("You don't have enough knowledge points");
         return;
     }
 
-    CharacterDatabase.PQuery("INSERT INTO characters_stats_boost VALUES (%u, %u, %f) ON DUPLICATE KEY UPDATE amount = amount + %f", player->GetGUID(), stat, 1.0f, 1.0f);
+
+    CharacterDatabase.PQuery("INSERT INTO characters_stats_boost VALUES (%u, %u, %f) ON DUPLICATE KEY UPDATE amount = amount + %f", player->GetGUID(), stat, float(amount), float(amount));
 
     StatsBoost::RemoveStatsPointsToPlayer(player, costToUpgradeStat);
-    StatsBoost::UpdateStatsPlayer(player, stat, 1.f, true);
+
+    StatsBoost::UpdateStatsPlayer(player, stat, (float)amount, true);
+
+
 }
 
 void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
@@ -318,20 +324,6 @@ void StatsBoost::RemoveStatsPointsToPlayer(Player * player, uint64 amount)
 
 void StatsBoost::GiveStatsPointsToPlayer(Player * player, uint64 amount)
 {
-
-    if (player->getLevel() != sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
-        switch (uint64(CustomRates::get(player)))
-        {
-        case 1:
-            amount *= 3;
-            break;
-        case 2:
-            amount *= 2;
-            break;
-        default:
-            break;
-        }
-    }
 
     // Upgrade total Stats points -------------------------------------------------------
     auto it = StatsBoost::MapTotalStatsPointsPlayer.find(player->GetGUID());
@@ -368,13 +360,13 @@ void StatsBoost::RewardStatsPointsOnKillBoss(Player* killer, Creature* killed) {
         Player* player = ObjectAccessor::FindPlayer((*it).guid);
         if (player) {
             if (killed->isWorldBoss()) {
-                canRewardGroup = player->getLevel() >= killed->getLevel() + 3; // Allow 3 levels difference when you kill a world boss
+                canRewardGroup = player->getLevel() <= killed->getLevel() + 3; // Allow 3 levels difference when you kill a world boss
             }
-            else if (killed->IsDungeonBoss()) {
+            else if (killed ->IsDungeonBoss()) {
                 if (player->getLevel() == sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
-                    canRewardGroup = player->getLevel() >= killed->getLevel() + 3; // Allow 3 levels difference at level max;
+                    canRewardGroup = player->getLevel() <= killed->getLevel() + 3; // Allow 3 levels difference at level max;
                 else
-                    canRewardGroup = player->getLevel() >= killed->getLevel() + 5; // Allow 5 levels under the level max
+                    canRewardGroup = player->getLevel() <= killed->getLevel() + 5; // Allow 5 levels under the level max
             }
         }
        

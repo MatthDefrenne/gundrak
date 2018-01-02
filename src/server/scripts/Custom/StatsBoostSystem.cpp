@@ -20,6 +20,7 @@ void sendGossipMenuStats(Player* player, Item* item) {
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tShow me ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tShow me spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tShow me defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/achievement_general:30:30:-20:0|tBuy 1 talent point (1000 points of Knowledge)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_disenchant:30:30:-20:0|t|cff003939Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
     SendGossipMenuFor(player, 90000, item->GetGUID());
 }
@@ -165,8 +166,7 @@ class StatsBoostSystem : PlayerScript {
 
                 break;
             case RACE_TAUREN:
-                player->LearnSpell(15277, false);
-
+                player->LearnSpell(18989, false);
                 break;
             case RACE_TROLL:
                 player->LearnSpell(10796, false);
@@ -199,47 +199,57 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         sendGossipMenuStats(player, item);
         break;
     case GOSSIP_ACTION_INFO_DEF + 1:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_shardbrilliantsmall:30:30:-20:0|t Upgrade Spirit", GOSSIP_SENDER_MAIN, 1);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|t Upgrade Strength", GOSSIP_SENDER_MAIN, 2);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_unyeildingstamina:30:30:-20:0|t Upgrade Stamina", GOSSIP_SENDER_MAIN, 3);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_blessingofagility:30:30:-20:0|t Upgrade Agility", GOSSIP_SENDER_MAIN, 4);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_magicalsentry:30:30:-20:0|t Upgrade Intellect", GOSSIP_SENDER_MAIN, 5);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_shardbrilliantsmall:30:30:-20:0|t Upgrade Spirit", GOSSIP_SENDER_MAIN, 1, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|t Upgrade Strength", GOSSIP_SENDER_MAIN, 2, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_unyeildingstamina:30:30:-20:0|t Upgrade Stamina", GOSSIP_SENDER_MAIN, 3, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_blessingofagility:30:30:-20:0|t Upgrade Agility", GOSSIP_SENDER_MAIN, 4, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_magicalsentry:30:30:-20:0|t Upgrade Intellect", GOSSIP_SENDER_MAIN, 5, "Amount of upgrade", 0, true);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 2:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_battleshout:30:30:-20:0|t Upgrade melee attack power", GOSSIP_SENDER_MAIN, 6);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_criticalstrike:30:30:-20:0|tUpgrade melee critical hit", GOSSIP_SENDER_MAIN, 7);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade melee hit rating", GOSSIP_SENDER_MAIN, 8);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_gouge:30:30:-20:0|tUpgrade expertise rating", GOSSIP_SENDER_MAIN, 9);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_sunder:30:30:-20:0|tUpgrade armor penetration rating", GOSSIP_SENDER_MAIN, 10);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_invisibilty:30:30:-20:0|tUpgrade haste melee", GOSSIP_SENDER_MAIN, 11);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_battleshout:30:30:-20:0|t Upgrade melee attack power", GOSSIP_SENDER_MAIN, 6, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_criticalstrike:30:30:-20:0|tUpgrade melee critical hit", GOSSIP_SENDER_MAIN, 7, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade melee hit rating", GOSSIP_SENDER_MAIN, 8, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_gouge:30:30:-20:0|tUpgrade expertise rating", GOSSIP_SENDER_MAIN, 9, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_warrior_sunder:30:30:-20:0|tUpgrade armor penetration rating", GOSSIP_SENDER_MAIN, 10, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_invisibilty:30:30:-20:0|tUpgrade haste melee", GOSSIP_SENDER_MAIN, 11, "Amount of upgrade", 0, true);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 3:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_trueshot:30:30:-20:0|t Upgrade Ranged attack power", GOSSIP_SENDER_MAIN, 12);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_criticalstrike:30:30:-20:0|tUpgrade Ranged critical hit", GOSSIP_SENDER_MAIN, 13);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade Ranged hit rating", GOSSIP_SENDER_MAIN, 14);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_hunter_runningshot:30:30:-20:0|tUpgrade Haste ranged", GOSSIP_SENDER_MAIN, 15);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_trueshot:30:30:-20:0|t Upgrade Ranged attack power", GOSSIP_SENDER_MAIN, 12, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_criticalstrike:30:30:-20:0|tUpgrade Ranged critical hit", GOSSIP_SENDER_MAIN, 13, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_marksmanship:30:30:-20:0|tUpgrade Ranged hit rating", GOSSIP_SENDER_MAIN, 14, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/ability_hunter_runningshot:30:30:-20:0|tUpgrade Haste ranged", GOSSIP_SENDER_MAIN, 15, "Amount of upgrade", 0, true);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 4:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Spells power", GOSSIP_SENDER_MAIN, 16);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Spells critical hit", GOSSIP_SENDER_MAIN, 17);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Spells hit rating", GOSSIP_SENDER_MAIN, 18);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_slowingtotem:30:30:-20:0|tUpgrade Haste spell", GOSSIP_SENDER_MAIN, 19);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|tUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Spells power", GOSSIP_SENDER_MAIN, 16, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Spells critical hit", GOSSIP_SENDER_MAIN, 17, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Spells hit rating", GOSSIP_SENDER_MAIN, 18, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_slowingtotem:30:30:-20:0|tUpgrade Haste spell", GOSSIP_SENDER_MAIN, 19, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_holy_arcaneintellect:30:30:-20:0|tUpgrade Spell penetration rating", GOSSIP_SENDER_MAIN, 20, "Amount of upgrade", 0, true);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 5:
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Dodge rating", GOSSIP_SENDER_MAIN, 21);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Parry rating", GOSSIP_SENDER_MAIN, 22);
-        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Block", GOSSIP_SENDER_MAIN, 23);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_lightning:30:30:-20:0|tUpgrade Dodge rating", GOSSIP_SENDER_MAIN, 21, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_strength:30:30:-20:0|tUpgrade Parry rating", GOSSIP_SENDER_MAIN, 22, "Amount of upgrade", 0, true);
+        AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_nature_drowsy:30:30:-20:0|tUpgrade Block", GOSSIP_SENDER_MAIN, 23, "Amount of upgrade", 0, true);
         AddGossipItemFor(player, GOSSIP_ICON_DOT, "<- Back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         SendGossipMenuFor(player, 90001, item->GetGUID());
+        break;
+    case GOSSIP_ACTION_INFO_DEF + 10:
+        if (StatsBoost::GetStatsPoints(player) >= 1000) {
+            player->GetSession()->SendAreaTriggerMessage("You don't have enough of Points of Knowledge!");
+            CloseGossipMenuFor(player);
+        }
+        else {
+            player->SetFreeTalentPoints(1);
+            CloseGossipMenuFor(player);
+        }
         break;
     case GOSSIP_ACTION_INFO_DEF + 6:
         if (player->getLevel() >= 20)
@@ -272,6 +282,7 @@ public:
     StatsBoostItem() : ItemScript("StatsBoostItem") { }
 
     std::map<ObjectGuid, uint32> MaplastSavedAction;
+    uint32 statsToUpgrade;
 
     bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/) override // Any hook here
     {
@@ -289,10 +300,7 @@ public:
     {
         ClearGossipMenuFor(player); // Clears old options
 
-        if (action <= 23) {
-            StatsBoost::AddStatToPlayer(player, 1.f, action);
-        }
-        else if (action >= 1000)
+        if (action >= 1000)
             MaplastSavedAction[player->GetGUID()] = action;
         else
             MaplastSavedAction[player->GetGUID()] = 1000;
@@ -300,6 +308,22 @@ public:
 
         sendMenuGossip(player, item, MaplastSavedAction[player->GetGUID()]);
     }
+
+
+    void OnGossipSelectCode(Player* player, Item* item, uint32 sender, uint32 action, const char* code) {
+       if (!code) {
+            player->GetSession()->SendAreaTriggerMessage("Please enter a number!");
+            CloseGossipMenuFor(player);
+        }
+        float amount = atof(code);
+        if (!amount) {
+            player->GetSession()->SendAreaTriggerMessage("Please enter a number!");
+            CloseGossipMenuFor(player);
+        }
+        StatsBoost::AddStatToPlayer(player, amount, action);
+        sendMenuGossip(player, item, MaplastSavedAction[player->GetGUID()]);
+    }
+
 };
 
 class StatsBoostGobject : public GameObjectScript
