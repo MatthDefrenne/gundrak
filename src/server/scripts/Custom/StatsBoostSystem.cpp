@@ -20,7 +20,7 @@ void sendGossipMenuStats(Player* player, Item* item) {
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_weapon_bow_07:30:30:-20:0|tShow me ranged stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/spell_fire_flamebolt:30:30:-20:0|tShow me spell stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_shield_04:30:30:-20:0|tShow me defense stats", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/achievement_general:30:30:-20:0|tBuy 1 talent point (1000 points of Knowledge)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
+    AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/achievement_general:30:30:-20:0|tBuy 1 talent point (100 points of Knowledge)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
     AddGossipItemFor(player, GOSSIP_ICON_DOT, "|TInterface/ICONS/inv_enchant_disenchant:30:30:-20:0|t|cff003939Reset stats allocation", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
     SendGossipMenuFor(player, 90000, item->GetGUID());
 }
@@ -63,12 +63,12 @@ class StatsBoostSystem : PlayerScript {
             if (it != mapLastKillRarePlayer.end()) {
                 if ((*it).second != killed->GetEntry()) {
                     mapLastKillRarePlayer[killer->GetGUID()] = killed->GetEntry();
-                    StatsBoost::GiveStatsPointsToPlayer(killer, 12);
+                    StatsBoost::GiveStatsPointsToPlayer(killer, 10);
                 }
             }
             else {
                 mapLastKillRarePlayer[killer->GetGUID()] = killed->GetEntry();
-                StatsBoost::GiveStatsPointsToPlayer(killer, 12);
+                StatsBoost::GiveStatsPointsToPlayer(killer, 10);
             }
         }
 
@@ -242,12 +242,13 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 10:
-        if (StatsBoost::GetStatsPoints(player) >= 1000) {
+        if (StatsBoost::GetStatsPoints(player) >= 100) {
             player->GetSession()->SendAreaTriggerMessage("You don't have enough of Points of Knowledge!");
             CloseGossipMenuFor(player);
         }
         else {
-            player->SetFreeTalentPoints(1);
+            player->SetFreeTalentPoints(player->GetFreeTalentPoints() + 1);
+            StatsBoost::RemoveStatsPointsToPlayer(player, 100);
             CloseGossipMenuFor(player);
         }
         break;

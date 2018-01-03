@@ -1,6 +1,6 @@
 #include "ItemEnchantment.h"
 
-void ItemEnchantment::ApplyVisualEnchantment(Player* player, uint32 entry)
+void ItemEnchantment::ApplyVisualEnchantment(Player* player, uint32 entry, uint32 spellId)
 {
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(entry);
 
@@ -103,7 +103,7 @@ void ItemEnchantment::ApplyVisualEnchantment(Player* player, uint32 entry)
         else
         {
             if (s == 1) {
-                data << uint32(18384);
+                data << uint32(spellId);
                 data << uint32(1);
             }
             else {
@@ -148,4 +148,63 @@ void ItemEnchantment::ApplyVisualEnchantment(Player* player, uint32 entry)
     data << pProto->HolidayId;                          // Holiday.dbc?
     player->GetSession()->SendPacket(&data);
 
+}
+
+bool ItemEnchantment::SaveItemSpell(Player * player, Item * item, uint32 spell)
+{
+
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM character_item_enchantment WHERE guid = %u AND itemEntry = %u", player->GetGUID(), item->GetEntry());
+
+
+    if (result) {
+        player->GetSession()->SendAreaTriggerMessage("You cannot enchant this item.");
+        return false;
+    }
+
+    ItemEnchantment::ApplyVisualEnchantment(player, item->GetEntry(), spell);
+    SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spell);
+    player->CastSpell(player, spellproto, true, item);
+    CharacterDatabase.PQuery("INSERT INTO character_item_enchantment VALUES (%u, %u, %u)", player->GetGUID(), item->GetEntry(), spell);
+
+    return true;
+}
+
+
+void ItemEnchantment::ApplySpellOnLogin(Player* player) {
+
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM character_item_enchantment WHERE guid = %u", player->GetGUID());
+
+    if (!result)
+        return;
+
+    do
+    {
+        uint32 itemEntry = (*result)[1].GetUInt64();
+        uint32 spell = (*result)[2].GetInt64();
+
+        Item* item = player->GetItemByEntry(itemEntry);
+
+        if (!item)
+            return;
+
+        if (item->IsEquipped()) {
+            ItemEnchantment::ApplyVisualEnchantment(player, itemEntry, spell);
+            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spell);
+            player->CastSpell(player, spellproto, true, item);
+        }
+    } while (result->NextRow());
+
+}
+
+
+uint32 ItemEnchantment::GetRandomEnchantmentByClassId(Player* player) {
+
+    QueryResult result = CharacterDatabase.PQuery("SELECT spellId FROM `custom_spell` WHERE classId = %u ORDER BY RAND() LIMIT 1", player->getClass());
+
+    if (!result)
+        return false;
+
+    player->GetSession()->SendAreaTriggerMessage("%u", (*result)[0].GetUInt64());
+
+    return (*result)[0].GetUInt64();
 }

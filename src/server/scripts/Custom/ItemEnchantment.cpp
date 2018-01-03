@@ -9,6 +9,9 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "ItemEnchantment.h"
+#include "Chat.h"
+#include "World.h"
+#include "Group.h"
 
 static const char* GetSlotName(uint8 slot, WorldSession* /*session*/)
 {
@@ -36,6 +39,18 @@ static const char* GetSlotName(uint8 slot, WorldSession* /*session*/)
 }
 
 
+class ItemEnchantmentPlayer : public PlayerScript {
+
+public:
+    ItemEnchantmentPlayer() : PlayerScript("ItemEnchantmentPlayer") { }
+
+    void OnLogin(Player* player, bool firstLogin) {
+        ItemEnchantment::ApplySpellOnLogin(player);
+    }
+
+};
+
+
 bool canApplyEnchantment(uint32 entry) {
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(entry);
     return pProto->Spells[1].SpellId > -1;
@@ -57,22 +72,17 @@ public:
                         AddGossipItemFor(player, GOSSIP_ICON_TRAINER, slotname, 0, slot);
         }
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, item->GetGUID());
-        return false; // Cast the spell on use normally
+        return true; // Cast the spell on use normally
     }
 
-    void OnGossipSelect(Player* player, Item* /*item*/, uint32 /*sender*/, uint32 slot) override
+    void OnGossipSelect(Player* player, Item* item, uint32 /*sender*/, uint32 slot) override
     {
         Item* invItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
         if (invItem) {
-            ItemEnchantment::ApplyVisualEnchantment(player, invItem->GetEntry());
-            player->AddAura(18384, player);
-            player->AddAura(18384, player);
-            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(18384);
-            player->CastSpell(player, spellproto, true, invItem);
-            player->CastSpell(player, spellproto, true, invItem);
-            player->CastSpell(player, spellproto, true, invItem);
-            player->CastSpell(player, spellproto, true, invItem);
-
+            if (ItemEnchantment::SaveItemSpell(player, invItem, ItemEnchantment::GetRandomEnchantmentByClassId(player))) {
+                player->DestroyItemCount(item->GetEntry(), 1, true);
+                player->GetSession()->SendAreaTriggerMessage("Item successfuly enchanted");
+            }
         }
     }
 };
@@ -80,4 +90,5 @@ public:
 void AddSC_ItemEnchantmentScript() // Add to scriptloader normally
 {
     new ItemEnchantmentScript();
+    new ItemEnchantmentPlayer();
 }
