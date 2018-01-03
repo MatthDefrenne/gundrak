@@ -280,7 +280,7 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
         MAX_UPDATE = it->second;
     }
 
-    if (MAX_UPDATE <= amountUpgrade * amount) {
+    if (MAX_UPDATE * amount  <= amountUpgrade) {
         player->GetSession()->SendAreaTriggerMessage("You cannot upgrade this characteristics anymore");
         return;
     }

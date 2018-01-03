@@ -46,8 +46,7 @@ public:
 
     void OnLogin(Player* player, bool firstLogin) {
         ItemEnchantment::ApplySpellOnLogin(player);
-
-    }
+    }   
 
 };
 
