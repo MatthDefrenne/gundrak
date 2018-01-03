@@ -242,7 +242,7 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
         SendGossipMenuFor(player, 90001, item->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF + 10:
-        if (StatsBoost::GetStatsPoints(player) >= 100) {
+        if (StatsBoost::GetStatsPoints(player) <= 100) {
             player->GetSession()->SendAreaTriggerMessage("You don't have enough of Points of Knowledge!");
             CloseGossipMenuFor(player);
         }
