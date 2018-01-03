@@ -268,7 +268,7 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
     QueryResult result = CharacterDatabase.PQuery("SELECT amount FROM characters_stats_boost WHERE guid = %u and stat_type = %u", player->GetGUID(), stat);
 
     if (!result)
-        amountUpgrade = 0;
+        amountUpgrade = 1;
     else {
         Field* fields = result->Fetch();
         amountUpgrade = fields[0].GetUInt64();
@@ -280,7 +280,7 @@ void StatsBoost::AddStatToPlayer(Player * player, uint32 amount, uint32 stat)
         MAX_UPDATE = it->second;
     }
 
-    if (MAX_UPDATE * amount  <= amountUpgrade) {
+    if (MAX_UPDATE <= amountUpgrade * amount) {
         player->GetSession()->SendAreaTriggerMessage("You cannot upgrade this characteristics anymore");
         return;
     }
