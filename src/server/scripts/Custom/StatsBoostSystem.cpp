@@ -247,7 +247,7 @@ void sendMenuGossip(Player* player, Item* item, uint32& action) {
             CloseGossipMenuFor(player);
         }
         else {
-            player->SetFreeTalentPoints(player->GetFreeTalentPoints() + 1);
+            player->SetFreeTalentPoints(1);
             StatsBoost::RemoveStatsPointsToPlayer(player, 100);
             CloseGossipMenuFor(player);
         }
